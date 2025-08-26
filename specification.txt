@@ -1,0 +1,50 @@
+database info struct:
+
+- table count
+    pipe the output of the .schema command to some file, and use grep in bash to find all occurences of "CREATE TABLE".
+    add: sqlite3 test.db ".schema" | grep -owi "CREATE TABLE" | wc -l
+
+    (*to return wordcount: grep -ow 'STRING' file | wc -l)
+    (**if you pipe something into grep, it does not require a file specification after the command. The piped input IS the specified file.)
+
+- table names
+    add: sqlite3 test.db ".schema" | grep "CREATE TABLE" | awk '{print $3}'
+
+    ***if there are multiple tables, awk will have to be executed separately for each line.
+
+
+ ----- WARNING - THESE METHODS WILL NOT WORK IF EACH CREATE TABLE INVOCATION IS NOT ON A SEPARATE LINE, OR HAS SUBSEQUENT ARGUMENTS.
+
+- column count
+- column names
+
+wrapper implementation:
+    Usage: wrapper.exe [OPTION] DATABASE.db [TABLE]
+
+    Options:
+        -c  add a row into the selected table.
+        -r  select data from the selected table.
+        -u  update data from the selected table.
+        -d  delete data from the selected table.
+        *options will fail if a table is unspecified.
+
+        -h  list options.
+
+    Naked invocation:
+        list database info struct, and options (CRUD).
+    
+    - upon invocation, script caches relevant information about the database into a struct.
+    (should this be an actual created file to cover for multiple invocations?? I think so. Should I look into JSON or yaml now? Possibly.)
+
+    - if table unspecified, retrieve database table count, and all table names in the database, cached into an array.
+    print the table names and corresponding array index.
+
+    - if table specified, display an array of basic CRUD actions corresponding to their array index.
+
+***further add-ons:
+    - regular SQL statement execution flag. ignores wrapper abstraction and just executes the statement as normal SQL if need be
+    - CMake dependency initializer. What this means is just that at the start of attempting to make a wrapper, I had to configure the sqlite3 library
+    header files in order to use the associated sqlite3 objects, functions and so on. Which meant downloading a .tar file,
+    figuring out which files to move to my directory, and figuring out what flags to use during compilation.
+    Make a script to retrieve all the necessary files automatically. 
+    (*I think this is what CMake is used for.)  
