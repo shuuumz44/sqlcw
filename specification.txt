@@ -1,22 +1,28 @@
 database info struct:
 
 - table count
-    pipe the output of the .schema command to some file, and use grep in bash to find all occurences of "CREATE TABLE".
-    add: sqlite3 test.db ".schema" | grep -owi "CREATE TABLE" | wc -l
-
-    (*to return wordcount: grep -ow 'STRING' file | wc -l)
-    (**if you pipe something into grep, it does not require a file specification after the command. The piped input IS the specified file.)
-
 - table names
-    add: sqlite3 test.db ".schema" | grep "CREATE TABLE" | awk '{print $3}'
 
-    ***if there are multiple tables, awk will have to be executed separately for each line.
+** info about all tables within a database can be collected by executing a regular SQL statement, specifically on the "sqlite_master" table.
 
+specific command to retrieve table count in a database: SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT IN ('android_metadata', 'sqlite_sequence');
+"NOT IN" clauses included to remove pesky automatically generated files. 
+---------------------
+    - for each table:
+        - column count
+        - column names
 
- ----- WARNING - THESE METHODS WILL NOT WORK IF EACH CREATE TABLE INVOCATION IS NOT ON A SEPARATE LINE, OR HAS SUBSEQUENT ARGUMENTS.
+ ^^^ IMPLEMENTATION NOTES ^^^
+    SQL is not very friendly towards output control. There exist specific functions to retrieve certain data, and the way that results are
+    printed can be modified, however SQL strictly prints output, instead of returning output.
+    This means that in order to direct whatever SQL outputs into data that we can cache, we have to get a little more creative.
 
-- column count
-- column names
+    Initially caching all of the data on a database like this will require that we take all of sqlite's outputs, output them in a specific way
+    most readable for our needs, and scan the output somewhere else for further parsing.
+
+    for example, we can prompt sqlite for all the information about a table in a database, specify the .mode to output as JSON, and pipe that output to
+    a JSON parser so that we can cache all of THAT data into our database struct, for further sqlite prompting.
+    ~ at least that's the plan for now. ~
 
 wrapper implementation:
     Usage: wrapper.exe [OPTION] DATABASE.db [TABLE]
@@ -30,16 +36,33 @@ wrapper implementation:
 
         -h  list options.
 
-    Naked invocation:
-        list database info struct, and options (CRUD).
-    
-    - upon invocation, script caches relevant information about the database into a struct.
-    (should this be an actual created file to cover for multiple invocations?? I think so. Should I look into JSON or yaml now? Possibly.)
+    Invocations:
+        Naked:
+            - list database info struct, and options (CRUD).
+            
+            - upon invocation, script caches relevant information about the database into a struct.
+            (should this be an actual created file to cover for multiple invocations?? I think so. Should I look into JSON or yaml now? Possibly.)
 
-    - if table unspecified, retrieve database table count, and all table names in the database, cached into an array.
-    print the table names and corresponding array index.
+            - retrieve database table count, and all table names in the database, cached into an array.
+            
+            - print the table names and corresponding array index.
 
-    - if table specified, display an array of basic CRUD actions corresponding to their array index.
+        Table specified:
+            - perform specified action on given table, otherwise list CRUD options.
+
+    Execution:
+        - Check if invocation is properly formatted, and that database exists.
+
+        - Check to see if database struct has already been created, or if it is NULL.
+            -- if database object is NULL, create it:
+                # extract all existing tables from sqlite_master table.
+                # for each table, extract column count and column names.
+                    --- extracting data from SQLite ---
+                    *Since SQLite is entirely print-based for all relevant purposes, direct output to a (JSON) file and read with file I/O functions.
+                    @ output entry to file
+                    @ use json-parser dependency to read file / cache values into database struct
+
+        - Execute statement in accordance with invocation rules.
 
 ***further add-ons:
     - regular SQL statement execution flag. ignores wrapper abstraction and just executes the statement as normal SQL if need be

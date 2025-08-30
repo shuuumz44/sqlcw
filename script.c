@@ -1,5 +1,14 @@
 #include "sqlite3.h"
 #include <stdio.h>
+#include <stdlib.h>
+
+typedef struct database {
+    int table_count;
+    char** table_names;
+
+    int* column_count;
+    char*** column_names;
+};
 
 int main(int argc, char **argv) {
     sqlite3 *db;
@@ -7,7 +16,7 @@ int main(int argc, char **argv) {
     int rc;
 
     if (argc != 3) {
-        printf("usage: [DATABASE] [TABLE]\n");
+        printf("usage: [DATABASE] TABLE\n");
         return 1;
     }
 
@@ -19,21 +28,7 @@ int main(int argc, char **argv) {
     }
     printf("database opened.\n\n");
 
-    char sql[100];
-    sprintf(sql, "SELECT * FROM %s LIMIT 1;", argv[2]);
-    rc = sqlite3_exec(db, sql, 0, 0, &zErrMsg);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        sqlite3_close(db);
-        return 3;
-    }
-    printf("database cached.\n");
-
-    char syscall[100];
-    sprintf(syscall, 'sqlite3 test.db ".schema" | grep -owi "CREATE TABLE" | wc -l');
-    int tables = system(syscall);
-    printf("amount of tables: %i\n", tables);
+    // if !database.JSON, create JSON file
 
     sqlite3_close(db);
     return 0;
