@@ -24,6 +24,19 @@ specific command to retrieve table count in a database: SELECT COUNT(*) FROM sql
     a JSON parser so that we can cache all of THAT data into our database struct, for further sqlite prompting.
     ~ at least that's the plan for now. ~
 
+    ^^^ BUILDING JSON OBJECT (object does not exist) :
+        table_count:    SELECT COUNT(*) FROM sqlite_master;
+        table_names:    for (int i=0; i < table_count; i++) {   SELECT tbl_name FROM sqlite_master WHERE [row_id] = i;  }
+                        * figure out which built-in value "row_id" was.
+        column_count:   
+
+    ^^^ READING JSON OBJECT (object already exists) :
+        1. convert entire JSON file into a string.
+        2. parse string into json_object with json.h library.
+
+        --- as of right now: make makefile properly find header files in ./header directory
+        *** you need to include all the *.c files as well...
+
 wrapper implementation:
     Usage: wrapper.exe [OPTION] DATABASE.db [TABLE]
 
@@ -53,8 +66,8 @@ wrapper implementation:
     Execution:
         - Check if invocation is properly formatted, and that database exists.
 
-        - Check to see if database struct has already been created, or if it is NULL.
-            -- if database object is NULL, create it:
+        - Check to see if .JSON file exists.
+            --  if .JSON does not exist, create it:
                 # extract all existing tables from sqlite_master table.
                 # for each table, extract column count and column names.
                     --- extracting data from SQLite ---

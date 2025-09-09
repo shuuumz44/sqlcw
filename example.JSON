@@ -1,0 +1,9 @@
+{
+    "table_count": 2,
+    "table_names": ["coffee", "orders"],
+    "column_count": [3, 2],
+    "column_names": [
+        ["beans", "milk", "sugar"],
+        ["name", "order"]
+    ]
+}
