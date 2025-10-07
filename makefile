@@ -1,4 +1,13 @@
-headers := $(wildcard *.h) $(wildcard *.c)
-INC_DIR := -I./headers
-script: script.c headers
-	gcc -o script.exe script.c libsqlite3.a $(INC_DIR)
+DIR = include/headers
+CC = gcc
+CFLAGS = -Wall -Wextra -g
+exe = script
+LIB = $(wildcard lib*.a)
+
+$(exe): script.c 
+	$(CC) $(CFLAGS) $@.c -o $@ -I$(DIR) $(LIB)
+
+.PHONY: clean
+
+clean:
+	rm $(exe)

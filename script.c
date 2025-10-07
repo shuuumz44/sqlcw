@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
 
         // output sqlite commands to output to JSON
     }
-    fread(json_str, sizeof(json_file)/4, 1, json_file);
-    database = json_tokener_parse(json_str);
+    // fread(json_str, sizeof(json_file)/4, 1, json_file);
+    // database = json_tokener_parse(json_str);
 
     fclose(json_file);
     sqlite3_close(db);
